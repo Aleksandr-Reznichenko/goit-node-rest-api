@@ -1,15 +1,27 @@
 {
   "name": "goit-node-rest-api",
+  "version": "1.0.0",
+  "main": "app.js",
   "type": "module",
   "scripts": {
     "start": "node ./app.js",
     "dev": "nodemon ./app.js"
   },
+  "engines": {
+    "npm": "10.2.3",
+    "node": "v20.10.0"
+  },
+  "author": "Aleksandr Reznichenko",
+  "repository": {
+    "type": "github",
+    "url": "https://github.com/Aleksandr-Reznichenko/goit-node-rest-api"
+  },
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "joi": "^17.11.0",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "nanoid": "^5.0.7"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
