@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import {
   listContacts,
   getContactById,
@@ -7,6 +8,8 @@ import {
   updateStatusContact,
 } from "../services/contactsServices.js";
 import HttpError from "../helpers/HttpError.js";
+
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 export const getAllContacts = async (req, res, next) => {
   try {
@@ -19,7 +22,11 @@ export const getAllContacts = async (req, res, next) => {
 
 export const getOneContact = async (req, res, next) => {
   try {
-    const contact = await getContactById(req.params.id);
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      throw HttpError(400, "Invalid ID format");
+    }
+    const contact = await getContactById(id);
     if (!contact) {
       throw HttpError(404, "Not found");
     }
@@ -31,7 +38,11 @@ export const getOneContact = async (req, res, next) => {
 
 export const deleteContact = async (req, res, next) => {
   try {
-    const contact = await removeContact(req.params.id);
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      throw HttpError(400, "Invalid ID format");
+    }
+    const contact = await removeContact(id);
     if (!contact) {
       throw HttpError(404, "Not found");
     }
@@ -52,7 +63,11 @@ export const createContact = async (req, res, next) => {
 
 export const updateContact = async (req, res, next) => {
   try {
-    const updatedContact = await updateContactService(req.params.id, req.body);
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      throw HttpError(400, "Invalid ID format");
+    }
+    const updatedContact = await updateContactService(id, req.body);
     if (!updatedContact) {
       throw HttpError(404, "Not found");
     }
@@ -64,10 +79,11 @@ export const updateContact = async (req, res, next) => {
 
 export const updateFavorite = async (req, res, next) => {
   try {
-    const updatedContact = await updateStatusContact(
-      req.params.id,
-      req.body.favorite
-    );
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      throw HttpError(400, "Invalid ID format");
+    }
+    const updatedContact = await updateStatusContact(id, req.body.favorite);
     if (!updatedContact) {
       throw HttpError(404, "Not found");
     }
