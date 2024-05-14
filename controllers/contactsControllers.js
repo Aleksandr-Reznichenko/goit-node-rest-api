@@ -27,9 +27,11 @@ export const getOneContact = async (req, res, next) => {
       throw HttpError(400, "Invalid ID format");
     }
     const contact = await getContactById(id);
-    if (!contact) {
+
+    if (!contact || contact.owner.toString() !== req.user.id) {
       throw HttpError(404, "Not found");
     }
+
     res.status(200).json(contact);
   } catch (error) {
     next(error);
@@ -43,9 +45,11 @@ export const deleteContact = async (req, res, next) => {
       throw HttpError(400, "Invalid ID format");
     }
     const contact = await removeContact(id);
-    if (!contact) {
+
+    if (!contact || contact.owner.toString() !== req.user.id) {
       throw HttpError(404, "Not found");
     }
+
     res.status(200).json(contact);
   } catch (error) {
     next(error);
@@ -67,10 +71,14 @@ export const updateContact = async (req, res, next) => {
     if (!isValidObjectId(id)) {
       throw HttpError(400, "Invalid ID format");
     }
-    const updatedContact = await updateContactService(id, req.body);
-    if (!updatedContact) {
+    const contact = await getContactById(id);
+
+    if (!contact || contact.owner.toString() !== req.user.id) {
       throw HttpError(404, "Not found");
     }
+
+    const updatedContact = await updateContactService(id, req.body);
+
     res.status(200).json(updatedContact);
   } catch (error) {
     next(error);
@@ -83,10 +91,14 @@ export const updateFavorite = async (req, res, next) => {
     if (!isValidObjectId(id)) {
       throw HttpError(400, "Invalid ID format");
     }
-    const updatedContact = await updateStatusContact(id, req.body.favorite);
-    if (!updatedContact) {
+    const contact = await getContactById(id);
+
+    if (!contact || contact.owner.toString() !== req.user.id) {
       throw HttpError(404, "Not found");
     }
+
+    const updatedContact = await updateStatusContact(id, req.body.favorite);
+
     res.status(200).json(updatedContact);
   } catch (error) {
     next(error);
