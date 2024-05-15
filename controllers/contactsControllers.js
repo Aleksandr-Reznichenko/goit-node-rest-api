@@ -41,16 +41,28 @@ export const getOneContact = async (req, res, next) => {
 export const deleteContact = async (req, res, next) => {
   try {
     const { id } = req.params;
+
     if (!isValidObjectId(id)) {
       throw HttpError(400, "Invalid ID format");
     }
-    const contact = await removeContact(id);
 
-    if (!contact || contact.owner.toString() !== req.user.id) {
-      throw HttpError(404, "Not found");
+    const contact = await getContactById(id);
+
+    if (!contact) {
+      throw HttpError(404, "Contact not found");
     }
 
-    res.status(200).json(contact);
+    if (contact.owner.toString() !== req.user.id) {
+      throw HttpError(403, "Forbidden! Contact does not belong to the user");
+    }
+
+    const deletedContact = await removeContact(req.user.id, id);
+
+    if (!deletedContact) {
+      throw HttpError(404, "Contact not found");
+    }
+
+    res.status(200).json(deletedContact);
   } catch (error) {
     next(error);
   }
