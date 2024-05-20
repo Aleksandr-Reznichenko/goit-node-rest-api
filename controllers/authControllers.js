@@ -1,9 +1,18 @@
 import "dotenv/config";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import Jimp from "jimp";
+import gravatar from "gravatar";
+import { promises as fs } from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import controllerWrapper from "../helpers/controllerWrapper.js";
 import HttpError from "../helpers/HttpError.js";
 import User from "../models/users.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const avatarsPath = path.join(__dirname, "../", "public", "avatars");
 
 export const register = controllerWrapper(async (req, res, next) => {
   const { email, password } = req.body;
@@ -16,16 +25,19 @@ export const register = controllerWrapper(async (req, res, next) => {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
+  const avatarURL = gravatar.url(email, { s: "250", r: "pg", d: "mm" }, true);
 
   const newUser = await User.create({
     email: emailInLowerCase,
     password: passwordHash,
+    avatarURL,
   });
 
   res.status(201).json({
     user: {
       email,
       subscription: newUser.subscription,
+      avatarURL,
     },
   });
 });
@@ -91,4 +103,25 @@ export const updateSubscription = controllerWrapper(async (req, res, next) => {
   res
     .status(200)
     .json({ email: updatedUser.email, subscription: updatedUser.subscription });
+});
+
+export const updateAvatar = controllerWrapper(async (req, res) => {
+  if (!req.user) {
+    throw HttpError(401, "Not authorized");
+  }
+
+  const { _id } = req.user;
+  const { path: tempUpload, originalname } = req.file;
+  const fileName = `${_id}_${originalname}`;
+  const resultUpload = path.join(avatarsPath, fileName);
+
+  await fs.rename(tempUpload, resultUpload);
+
+  const image = await Jimp.read(resultUpload);
+  await image.resize(250, 250).writeAsync(resultUpload);
+
+  const avatarURL = `/avatars/${fileName}`;
+  await User.findByIdAndUpdate(_id, { avatarURL });
+
+  res.json({ avatarURL });
 });
