@@ -110,6 +110,10 @@ export const updateAvatar = controllerWrapper(async (req, res) => {
     throw HttpError(401, "Not authorized");
   }
 
+  if (!req.file) {
+    throw HttpError(400, "File not provided");
+  }
+
   const { _id } = req.user;
   const { path: tempUpload, originalname } = req.file;
   const fileName = `${_id}_${originalname}`;
