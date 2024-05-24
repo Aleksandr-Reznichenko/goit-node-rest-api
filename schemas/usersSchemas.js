@@ -10,6 +10,15 @@ export const registerSchema = Joi.object({
   password: Joi.string().required().min(6),
 });
 
+export const emailSchema = Joi.object({
+  email: Joi.string()
+    .pattern(/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/)
+    .required()
+    .messages({
+      "string.pattern.base": "Email must be a valid email address",
+    }),
+});
+
 export const loginSchema = Joi.object({
   email: Joi.string()
     .pattern(/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/)
